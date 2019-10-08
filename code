@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="main_column">
+    <!-- TODO: Redesign  home page lay-out-->    
+    <h1>Flexible Offering Tool Compatibility</h1>
+
+    <!-- Display VS and Tools relationship-->
+    <h2>Virtual Stations <=> Tools</h2>
+    {% for vs in vss %}
+    <h3>{{ vs.name }}</h3>
+        <p>
+            {% for v, t in tool_to_vs.items %}
+                {% if vs.name == v %}
+                    {% for tool in t %}
+                        {{ tool }} <br>
+                    {% endfor %}
+                {% endif %}    
+            {% endfor %}
+        </p>
+    {% endfor %}
+
+    <!-- Display FmsAddOnFeatures, VS and Tools relationship-->
+    <h2>FmsAddOnFeatures <=> Virtual Stations <=> Tools</h2>
+    {% for vs in vss %}
+    <p>{{ vs.name }}</p>
+    <p>
+        {% for v, t in tool_to_vs.items %}
+            {% if vs.name == v %}
+                {% for tool in t %}
+                    {{ tool }}
+                {% endfor %}
+            {% endif %}    
+        {% endfor %}
+    </p>
+    {% endfor %}
+
+</div>
+{% endblock content %}
+
+
+---------------
+
+
+from django.shortcuts import render
+from .models import VirtualStation, Tool, AdminUpdate
+
+# Create your views here.
+
+def home(request):
+    #TODO: refactoring needed
+    vss = VirtualStation.objects.all()
+
+    tool_to_vs = {}
+    feature_i_to_vs = {}
+    feature_a_to_vs = {}
+
+    for vs in vss:
+        tools = []
+        feature = []
+        tools_vs = vs.tool_set.all()
+        feature_vs = vs.fmsaddon_set.all()
+
+        for tool in tools_vs:
+            tools.append(tool.family)
+        tool_to_vs[vs.name] = tools
+
+    return render(
+        request,
+        "home.html",
+        {
+        "feature_i_to_vs" : feature_i_to_vs,
+        "feature_a_to_vs" : feature_a_to_vs,
+        "tool_to_vs" : tool_to_vs,
+        "vss" : vss
+        })
+
+
+def updates(request):
+    updates = AdminUpdate.objects.all()
+    return render(
+        request,
+        'updates.html', 
+        {'updates' : updates})
