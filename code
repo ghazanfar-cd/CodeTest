@@ -75,6 +75,7 @@ def home(request):
         "vss" : vss
         })
 
+bc4be76f887491a4b8990bd18141bd4622be623d
 
 def updates(request):
     updates = AdminUpdate.objects.all()
