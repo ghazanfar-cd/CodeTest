@@ -83,3 +83,11 @@ def updates(request):
         request,
         'updates.html', 
         {'updates' : updates})
+
+
+
+sudo iptables -t nat -L POSTROUTING --line-numbers -n
+sudo iptables -t nat -D POSTROUTING 1 # The index for MACE_workaround
+sudo ifconfig | grep 169.254 # get the IP
+sudo iptables -t nat -I POSTROUTING 1 -s 172.17.0.0/16 -d 169.254.0.0/16  -j SNAT --to-source 169.254.1.5 -m comment --comment MACE_workaround # replace 169.254.1.5 to the IP
+
