@@ -1,0 +1,169 @@
+----------------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------------
+
+
+ghazanfar@ITDLITXPVIR1:~/ms-repo/tcn/tcn$ git diff
+diff --git a/tcn/db.sqlite3 b/tcn/db.sqlite3
+index e8dba96..62cc19c 100644
+Binary files a/tcn/db.sqlite3 and b/tcn/db.sqlite3 differ
+diff --git a/tcn/tcnct/views.py b/tcn/tcnct/views.py
+index 156fc63..63dc0f9 100644
+--- a/tcn/tcnct/views.py
++++ b/tcn/tcnct/views.py
+@@ -6,8 +6,10 @@ from .models import VirtualStation, Tool, AdminUpdate, FmsAddOnFeatures, FmsAddO
+ def home(request):
+     #TODO: refactoring needed
+     vss = VirtualStation.objects.all()
++    allTools = Tool.objects.all()
+     features = FmsAddOnFeatures.objects.all()
+ 
++    vs_to_tool = {}
+     tool_to_vs = {}
+     feature_to_vs = {}
+     feature_to_tool = {}
+@@ -27,7 +29,14 @@ def home(request):
+ 
+         for tool in tools_vs:
+             tools.append(tool.family)
+:...skipping...
+diff --git a/tcn/db.sqlite3 b/tcn/db.sqlite3
+index e8dba96..62cc19c 100644
+Binary files a/tcn/db.sqlite3 and b/tcn/db.sqlite3 differ
+diff --git a/tcn/tcnct/views.py b/tcn/tcnct/views.py
+index 156fc63..63dc0f9 100644
+--- a/tcn/tcnct/views.py
++++ b/tcn/tcnct/views.py
+@@ -6,8 +6,10 @@ from .models import VirtualStation, Tool, AdminUpdate, FmsAddOnFeatures, FmsAddO
+ def home(request):
+     #TODO: refactoring needed
+     vss = VirtualStation.objects.all()
++    allTools = Tool.objects.all()
+     features = FmsAddOnFeatures.objects.all()
+ 
++    vs_to_tool = {}
+     tool_to_vs = {}
+     feature_to_vs = {}
+     feature_to_tool = {}
+@@ -27,7 +29,14 @@ def home(request):
+ 
+         for tool in tools_vs:
+             tools.append(tool.family)
+-        tool_to_vs[vs.name] = tools
++        vs_to_tool[vs.name] = tools
++
++    for tool in allTools:
++        vsList = []
++        vsCorrespToTool = tool.virtual_station.all()
++        for vs in vsCorrespToTool:
++            vsList.append(vs.name)
++        tool_to_vs[tool.family] = vsList
+ 
+     return render(
+         request,
+@@ -35,8 +44,10 @@ def home(request):
+         {
+         "feature_to_tool" : feature_to_tool,
+         "feature_to_vs" : feature_to_vs,
++        "vs_to_tool" : vs_to_tool,
+         "tool_to_vs" : tool_to_vs,
+         "tool_to_vs" : tool_to_vs,
+diff --git a/tcn/db.sqlite3 b/tcn/db.sqlite3
+index e8dba96..62cc19c 100644
+Binary files a/tcn/db.sqlite3 and b/tcn/db.sqlite3 differ
+diff --git a/tcn/tcnct/views.py b/tcn/tcnct/views.py
+index 156fc63..63dc0f9 100644
+--- a/tcn/tcnct/views.py
++++ b/tcn/tcnct/views.py
+@@ -6,8 +6,10 @@ from .models import VirtualStation, Tool, AdminUpdate, FmsAddOnFeatures, FmsAddO
+ def home(request):
+     #TODO: refactoring needed
+     vss = VirtualStation.objects.all()
++    allTools = Tool.objects.all()
+     features = FmsAddOnFeatures.objects.all()
+ 
++    vs_to_tool = {}
+     tool_to_vs = {}
+     feature_to_vs = {}
+     feature_to_tool = {}
+@@ -27,7 +29,14 @@ def home(request):
+ 
+         for tool in tools_vs:
+             tools.append(tool.family)
+-        tool_to_vs[vs.name] = tools
++        vs_to_tool[vs.name] = tools
++
++    for tool in allTools:
++        vsList = []
++        vsCorrespToTool = tool.virtual_station.all()
++        for vs in vsCorrespToTool:
++            vsList.append(vs.name)
++        tool_to_vs[tool.family] = vsList
+ 
+     return render(
+         request,
+@@ -35,8 +44,10 @@ def home(request):
+         {
+         "feature_to_tool" : feature_to_tool,
+         "feature_to_vs" : feature_to_vs,
++        "vs_to_tool" : vs_to_tool,
+         "tool_to_vs" : tool_to_vs,
+-        "vss" : vss
++        "vss" : vss,
++        "allTools" : allTools
+         })
+ 
+ 
+diff --git a/tcn/templates/home.html b/tcn/templates/home.html
+index b0dcb3f..c656f70 100644
+--- a/tcn/templates/home.html
++++ b/tcn/templates/home.html
+@@ -11,7 +11,7 @@
+                <!-- using forloop counter to create stylable divs class names-->
+                <div class="card_{{forloop.counter}}" id="hideDiv"><h3>{{ vs.name }}</h3>
+                        <p>
+-                               {% for v, t in tool_to_vs.items %}
++                               {% for v, t in vs_to_tool.items %}
+                                        {% if vs.name == v %}
+                                                {% for tool in t %}
+                                                        {{ tool }} <br>
+@@ -21,6 +21,24 @@
+                        </p>
+                </div>
+     {% endfor %}
++       </div>
++       <div class="category">
++               <header class="card-header">Virtual Stations per Tool Type</header>
++
++               {% for tool in allTools %}
++                       {{ tool.family }}
++                       <p>
++                               {% for t, v in tool_to_vs.items %}
++                                       {% if tool.family == t %}
++                                               {% for v_s in v %}
++                                                       {{ v_s }} <br>
++                                               {% endfor %}
++                                       {% endif %}
++                               {% endfor %} <br
++                       </p>
++
++               {% endfor %}
++
+        </div>
+        <div class="category">
+     <!-- Display FmsAddOnFeatures, VS and Tools relationship feature_to_vs-->
+ghazanfar@ITDLITXPVIR1:~/ms-repo/tcn/tcn$ git status
+On branch backOnTrack
+Your branch is ahead of 'origin/master' by 2 commits.
+  (use "git push" to publish your local commits)
+
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git checkout -- <file>..." to discard changes in working directory)
+
+	modified:   db.sqlite3
+	modified:   tcnct/views.py
+	modified:   templates/home.html
+
+no changes added to commit (use "git add" and/or "git commit -a")
+ghazanfar@ITDLITXPVIR1:~/ms-repo/tcn/tcn$ 
+
